@@ -58,10 +58,12 @@ function printTodo({ id, userId, title, completed }) {
     const status = document.createElement('input');
     status.type = 'checkbox';
     status.checked = completed;
+    status.addEventListener('change', handleTodoChange);
 
     const close = document.createElement('span');
     close.innerHTML = '&times;';
     close.className = 'close';
+    close.addEventListener('click', handleClose);
 
     li.prepend(status);
     li.append(close);
@@ -111,4 +113,37 @@ function handleSubmit(event) {
         title: form.todo.value,
         completed: false,
     });
+}
+
+async function toggleTodoComplete(todoId, completed) {
+    try {
+        const response = await fetch(
+            `https://jsonplaceholder.typicode.com/todos/${todoId}`,
+            {
+            method: 'PATCH',
+            body: JSON.stringify({ completed }),
+            headers: {
+                'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to connect with the server! Please try later.');
+        }
+    } catch (error) {
+      alertError(error);
+    }
+}
+
+function handleTodoChange() {
+    const todoId = this.parentElement.dataset.id;
+    const completed = this.checked;
+
+    toggleTodoComplete(todoId, completed);
+}
+
+function handleClose() {
+    const todoId = this.parentElement.dataset.id;
+    deleteTodo(todoId);
 }
